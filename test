@@ -1,0 +1,29 @@
+#!/bin/bash
+
+src_dir="$PWD/src"
+test_dir="$PWD/src/tests"
+test_bin="$PWD/bin/tests"
+include_dir="$PWD/includes/"
+catch_precompiled="$test_dir/tests-main.o"
+
+if [ ! -f $catch_precompiled ]; then
+	echo "Needs to precompile catch first"
+	g++ -std=c++14 tests-main.cpp -c
+fi
+
+tests=() ## put the tests cpp files here
+sources=() ## put the corresponding source cpp files here (must be the same size as tests)
+executables=() ## put the names of the executables here (must be the same size as tests)
+
+num_tests=${#tests[@]}
+max_index=$(( $num_tests - 1 ))
+
+for index in $(seq 0 $max_index); do
+	echo "running test ${tests[$index]}"
+	test_file=${tests[$index]}
+	src_file=${sources[$index]}
+	exec_file=${executables[$index]}
+
+	g++ -I$include_dir $catch_precompiled $src_dir/$src_file \
+		$test_dir/$test_file -o $test_bin/$exec_file && $test_bin/$exec_file "$@"
+done
